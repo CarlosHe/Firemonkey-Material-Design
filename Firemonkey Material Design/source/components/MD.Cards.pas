@@ -18,7 +18,7 @@ type
   protected
     { Protected declarations }
     property Fill: TBrush read GetFill write SetFill;
-    property HitTest default False;
+    property HitTest default True;
     property CanFocus default False;
     procedure Paint; override;
     procedure FillChanged(Sender: TObject); virtual;
@@ -115,8 +115,11 @@ end;
 procedure TMDCard.Paint;
 begin
   inherited;
-  Canvas.FillRect(TRectF.Create(0, 0, Self.Width, Self.Height), 2, 2, [TCorner.TopLeft, TCorner.TopRight, TCorner.BottomLeft, TCorner.BottomRight],
+   Canvas.BeginScene;
+  Canvas.FillRect(TRectF.Create(0, 0, Self.Width, Self.Height), 5, 5, [TCorner.TopLeft, TCorner.TopRight, TCorner.BottomLeft, TCorner.BottomRight],
     AbsoluteOpacity, FFill, TCornerType.Round);
+   Canvas.EndScene;
+
 end;
 
 procedure TMDCard.SetFill(const Value: TBrush);
