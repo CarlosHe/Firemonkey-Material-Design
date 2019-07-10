@@ -1,0 +1,11 @@
+{
+	"name": "Firemonkey-Material-Design",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "source/",
+	"projects": [
+		"MaterialDesign.dproj"
+	],
+	"dependencies": {}
+}
