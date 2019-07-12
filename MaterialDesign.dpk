@@ -46,6 +46,8 @@ contains
   MD.TextFields in 'source\components\MD.TextFields.pas',
   MD.Input in 'source\components\MD.Input.pas',
   FMX.MDAutocompleteEdit.Style in 'source\style\edit\FMX.MDAutocompleteEdit.Style.pas',
-  FMX.MDEdit.Style in 'source\style\edit\FMX.MDEdit.Style.pas';
+  FMX.MDEdit.Style in 'source\style\edit\FMX.MDEdit.Style.pas',
+  MD.Checkbox in 'source\components\MD.Checkbox.pas',
+  MD.Classes in 'source\MD.Classes.pas';
 
 end.

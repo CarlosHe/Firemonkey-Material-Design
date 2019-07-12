@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, MD.Buttons, MD.ColorListBox, FMX.Types, DesignEditors, DesignIntf, ToolsAPI, FMXEditors, MD.ColorPalette, MD.Editors,
   System.UITypes,
-  MD.Input;
+  MD.Input, MD.Checkbox;
 
 procedure Register;
 
@@ -21,10 +21,11 @@ begin
   RegisterComponents('Material Design', [TMDFlowLayout]);
   RegisterComponents('Material Design', [TMDCard]);
   RegisterComponents('Material Design', [TMDEdit]);
+  RegisterComponents('Material Design', [TMDCheckbox]);
   // RegisterComponents('Material Design', [TMDTextFields]);
   RegisterPropertyEditor(TypeInfo(MD.ColorPalette.TMaterialColor), System.Classes.TPersistent, '', TMaterialColorProperty);
   RegisterPropertyEditor(TypeInfo(TAlphaColor), System.Classes.TPersistent, '', TMaterialColorProperty);
-  RegisterPropertyEditor(TypeInfo(TAlphaColor), FMX.Types.TFmxObject, '', TMaterialColorProperty);
+  RegisterPropertyEditor(TypeInfo(MD.ColorPalette.TMaterialColor), FMX.Types.TFmxObject, '', TMaterialColorProperty);
 end;
 
 end.
