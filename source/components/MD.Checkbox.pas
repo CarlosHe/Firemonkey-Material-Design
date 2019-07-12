@@ -45,6 +45,7 @@ type
     procedure RippleEffectFinish(Sender: TObject);
 
     procedure Resize; override;
+    procedure HitTestChanged; override;
     procedure DoCheckClick(Sender: TObject);
     procedure DoCheckTap(Sender: TObject; const Point: TPointF);
     procedure DoCheckedChange;
@@ -59,6 +60,7 @@ type
     { published declarations }
     property Align;
     property Anchors;
+    property HitTest;
     property ClipParent;
     property Cursor;
     property DragMode;
@@ -256,6 +258,13 @@ end;
 function TMDCheckbox.GetTextSettings: TTextSettings;
 begin
   Result := FMaterialTextSettings;
+end;
+
+procedure TMDCheckbox.HitTestChanged;
+begin
+  inherited;
+  if Assigned(FContainer) then
+  FContainer.HitTest := Self.HitTest;
 end;
 
 procedure TMDCheckbox.Resize;
