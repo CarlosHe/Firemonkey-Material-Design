@@ -202,6 +202,7 @@ end;
 destructor TMDCheckbox.Destroy;
 begin
   FreeAndNil(FSelectedPath);
+  FreeAndNil(FMaterialTextSettings);
   inherited;
 end;
 

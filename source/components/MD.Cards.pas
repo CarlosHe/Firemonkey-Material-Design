@@ -18,7 +18,7 @@ type
   protected
     { Protected declarations }
     property Fill: TBrush read GetFill write SetFill;
-    property HitTest default True;
+
     property CanFocus default False;
     procedure Paint; override;
     procedure FillChanged(Sender: TObject); virtual;
@@ -37,6 +37,7 @@ type
     property Enabled;
     property Locked;
     property Height;
+    property HitTest default True;
     property Padding;
     property Opacity;
     property Margins;
