@@ -100,7 +100,7 @@ type
     property OnDragDrop;
     property OnDragEnd;
     { Mouse events }
-    // property OnClick;
+    property OnClick;
     // property OnDblClick;
     property OnMouseDown;
     property OnMouseMove;
@@ -215,6 +215,7 @@ end;
 procedure TMDCheckbox.DoCheckClick(Sender: TObject);
 begin
   SetIsChecked(not FIsChecked);
+  Click;
   StartRippleEffect;
 end;
 
@@ -265,7 +266,7 @@ procedure TMDCheckbox.HitTestChanged;
 begin
   inherited;
   if Assigned(FContainer) then
-  FContainer.HitTest := Self.HitTest;
+    FContainer.HitTest := Self.HitTest;
 end;
 
 procedure TMDCheckbox.Resize;
