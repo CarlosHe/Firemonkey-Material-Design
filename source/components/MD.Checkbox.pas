@@ -37,7 +37,6 @@ type
     function GetTextSettings: TTextSettings;
     function GetText: string;
     procedure SetOnCheckAlignChange(const Value: TNotifyEvent);
-    procedure ObserverToggle(const AObserver: IObserver; const Value: Boolean);
     { private declarations }
   protected
     { protected declarations }
@@ -55,7 +54,6 @@ type
     procedure DoCheckAlignChange;
     procedure DoMaterialTextSettingsChanged(Sender: TObject);
     function CanObserve(const ID: Integer): Boolean; override;
-    procedure ObserverAdded(const ID: Integer; const Observer: IObserver); override;
   public
 
     { public declarations }
@@ -285,26 +283,6 @@ begin
   inherited;
   if Assigned(FContainer) then
     FContainer.HitTest := Self.HitTest;
-end;
-
-procedure TMDCheckbox.ObserverAdded(const ID: Integer; const Observer: IObserver);
-begin
-  inherited;
-//  if ID = TObserverMapping.EditLinkID or then
-    Observer.OnObserverToggle := ObserverToggle;
-end;
-
-procedure TMDCheckbox.ObserverToggle(const AObserver: IObserver; const Value: Boolean);
-var
-  LEditLinkObserver: IEditLinkObserver;
-begin
-  if Value then
-    begin
-      if Supports(AObserver, IEditLinkObserver, LEditLinkObserver) then
-        IsChecked := Value;
-    end
-  else
-    IsChecked := Value;
 end;
 
 procedure TMDCheckbox.Resize;
