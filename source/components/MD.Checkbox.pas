@@ -4,29 +4,30 @@ interface
 
 uses
   System.Classes, FMX.Objects, System.SysUtils, MD.ColorPalette, FMX.Graphics,
-  MD.Classes, FMX.Types, FMX.Controls, System.Types, System.UITypes, FMX.Ani;
+  MD.Classes, FMX.Types, FMX.Controls, System.Types, System.UITypes, FMX.Ani, Data.Bind.Components;
 
 type
 
   TCheckAlign = (After, Before);
 
+  [ObservableMember('IsChecked')]
   TMDCheckbox = class(TControl)
   private
     FContainer: TControl;
-    FIsChecked: boolean;
+    FIsChecked: Boolean;
     FSelectedPath: TPath;
     FCheckText: TText;
-    FIsIndeterminate: boolean;
+    FIsIndeterminate: Boolean;
     FMaterialColor: TMaterialColor;
     FOnCheckedChange: TNotifyEvent;
     FOnIndeterminateChange: TNotifyEvent;
     FCheckAlign: TCheckAlign;
     FMaterialTextSettings: TTextSettings;
     FOnCheckAlignChange: TNotifyEvent;
-    procedure SetIsChecked(const Value: boolean);
-    function GetIsChecked: boolean;
-    procedure SetIsIndeterminate(const Value: boolean);
-    function GetIsIndeterminate: boolean;
+    procedure SetIsChecked(const Value: Boolean);
+    function GetIsChecked: Boolean;
+    procedure SetIsIndeterminate(const Value: Boolean);
+    function GetIsIndeterminate: Boolean;
     procedure SetCheckAlign(const Value: TCheckAlign);
     procedure SetMaterialColor(const Value: TMaterialColor);
     procedure SetOnCheckedChange(const Value: TNotifyEvent);
@@ -36,6 +37,7 @@ type
     function GetTextSettings: TTextSettings;
     function GetText: string;
     procedure SetOnCheckAlignChange(const Value: TNotifyEvent);
+    procedure ObserverToggle(const AObserver: IObserver; const Value: Boolean);
     { private declarations }
   protected
     { protected declarations }
@@ -52,7 +54,10 @@ type
     procedure DoIndeterminateChange;
     procedure DoCheckAlignChange;
     procedure DoMaterialTextSettingsChanged(Sender: TObject);
+    function CanObserve(const ID: Integer): Boolean; override;
+    procedure ObserverAdded(const ID: Integer; const Observer: IObserver); override;
   public
+
     { public declarations }
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -81,8 +86,8 @@ type
     property Visible;
     property Width;
 
-    property IsChecked: boolean read GetIsChecked write SetIsChecked;
-    property IsIndeterminate: boolean read GetIsIndeterminate write SetIsIndeterminate;
+    property IsChecked: Boolean read GetIsChecked write SetIsChecked;
+    property IsIndeterminate: Boolean read GetIsIndeterminate write SetIsIndeterminate;
     property CheckAlign: TCheckAlign read FCheckAlign write SetCheckAlign;
 
     property MaterialColor: TMaterialColor read FMaterialColor write SetMaterialColor;
@@ -119,12 +124,25 @@ implementation
 
 const
 
-  UNSELECTED_ICON = 'M 19 5 v 14 H 5 V 5 h 14 m 0 -2 H 5 c -1.1 0 -2 0.9 -2 2 v 14 c 0 1.1 0.9 2 2 2 h 14 c 1.1 0 2 -0.9 2 -2 V 5 c 0 -1.1 -0.9 -2 -2 -2 Z';
+  UNSELECTED_ICON =
+    'M 19 5 v 14 H 5 V 5 h 14 m 0 -2 H 5 c -1.1 0 -2 0.9 -2 2 v 14 c 0 1.1 0.9 2 2 2 h 14 c 1.1 0 2 -0.9 2 -2 V 5 c 0 -1.1 -0.9 -2 -2 -2 Z';
   SELECTED_ICON =
     'M 19 3 H 5 c -1.11 0 -2 0.9 -2 2 v 14 c 0 1.1 0.89 2 2 2 h 14 c 1.11 0 2 -0.9 2 -2 V 5 c 0 -1.1 -0.89 -2 -2 -2 Z m -9 14 l -5 -5 l 1.41 -1.41 L 10 14.17 l 7.59 -7.59 L 19 8 l -9 9 Z';
-  INDETERMINATE_ICON = 'M 19 3 H 5 c -1.1 0 -2 0.9 -2 2 v 14 c 0 1.1 0.9 2 2 2 h 14 c 1.1 0 2 -0.9 2 -2 V 5 c 0 -1.1 -0.9 -2 -2 -2 Z m -2 10 H 7 v -2 h 10 v 2 Z';
+  INDETERMINATE_ICON =
+    'M 19 3 H 5 c -1.1 0 -2 0.9 -2 2 v 14 c 0 1.1 0.9 2 2 2 h 14 c 1.1 0 2 -0.9 2 -2 V 5 c 0 -1.1 -0.9 -2 -2 -2 Z m -2 10 H 7 v -2 h 10 v 2 Z';
 
   { TMDCheckbox }
+
+function TMDCheckbox.CanObserve(const ID: Integer): Boolean;
+begin
+  case ID of
+    TObserverMapping.EditLinkID,
+    TObserverMapping.ControlValueID:
+      Result := True;
+  else
+    Result := False;
+  end;
+end;
 
 constructor TMDCheckbox.Create(AOwner: TComponent);
 var
@@ -242,12 +260,12 @@ begin
   FCheckText.TextSettings.Assign(FMaterialTextSettings);
 end;
 
-function TMDCheckbox.GetIsChecked: boolean;
+function TMDCheckbox.GetIsChecked: Boolean;
 begin
   Result := FIsChecked;
 end;
 
-function TMDCheckbox.GetIsIndeterminate: boolean;
+function TMDCheckbox.GetIsIndeterminate: Boolean;
 begin
   Result := FIsIndeterminate;
 end;
@@ -267,6 +285,26 @@ begin
   inherited;
   if Assigned(FContainer) then
     FContainer.HitTest := Self.HitTest;
+end;
+
+procedure TMDCheckbox.ObserverAdded(const ID: Integer; const Observer: IObserver);
+begin
+  inherited;
+//  if ID = TObserverMapping.EditLinkID or then
+    Observer.OnObserverToggle := ObserverToggle;
+end;
+
+procedure TMDCheckbox.ObserverToggle(const AObserver: IObserver; const Value: Boolean);
+var
+  LEditLinkObserver: IEditLinkObserver;
+begin
+  if Value then
+    begin
+      if Supports(AObserver, IEditLinkObserver, LEditLinkObserver) then
+        IsChecked := Value;
+    end
+  else
+    IsChecked := Value;
 end;
 
 procedure TMDCheckbox.Resize;
@@ -326,24 +364,24 @@ end;
 procedure TMDCheckbox.SetCheckAlign(const Value: TCheckAlign);
 begin
   if FCheckAlign <> Value then
-  begin
-    FCheckAlign := Value;
-    case FCheckAlign of
-      After:
-        begin
-          FSelectedPath.Align := TAlignLayout.Left;
-          FCheckText.Margins.Left := -4;
-          FCheckText.Margins.Right := 12;
-        end;
-      Before:
-        begin
-          FSelectedPath.Align := TAlignLayout.Right;
-          FCheckText.Margins.Left := 12;
-          FCheckText.Margins.Right := -4;
-        end;
+    begin
+      FCheckAlign := Value;
+      case FCheckAlign of
+        After:
+          begin
+            FSelectedPath.Align := TAlignLayout.Left;
+            FCheckText.Margins.Left := -4;
+            FCheckText.Margins.Right := 12;
+          end;
+        Before:
+          begin
+            FSelectedPath.Align := TAlignLayout.Right;
+            FCheckText.Margins.Left := 12;
+            FCheckText.Margins.Right := -4;
+          end;
+      end;
+      DoCheckAlignChange;
     end;
-    DoCheckAlignChange;
-  end;
 end;
 
 procedure TMDCheckbox.SetMaterialColor(const Value: TMaterialColor);
@@ -352,24 +390,25 @@ begin
   FSelectedPath.Fill.Color := FMaterialColor;
 end;
 
-procedure TMDCheckbox.SetIsChecked(const Value: boolean);
+procedure TMDCheckbox.SetIsChecked(const Value: Boolean);
 begin
   if FIsChecked <> Value then
-  begin
-    FIsChecked := Value;
-    UpdateCheckPath;
-    DoCheckedChange;
-  end;
+    begin
+      FIsChecked := Value;
+      UpdateCheckPath;
+      DoCheckedChange;
+      TLinkObservers.ControlChanged(Self);
+    end;
 end;
 
-procedure TMDCheckbox.SetIsIndeterminate(const Value: boolean);
+procedure TMDCheckbox.SetIsIndeterminate(const Value: Boolean);
 begin
   if FIsIndeterminate <> Value then
-  begin
-    FIsIndeterminate := Value;
-    UpdateCheckPath;
-    DoIndeterminateChange;
-  end;
+    begin
+      FIsIndeterminate := Value;
+      UpdateCheckPath;
+      DoIndeterminateChange;
+    end;
 end;
 
 procedure TMDCheckbox.SetOnCheckAlignChange(const Value: TNotifyEvent);
@@ -400,9 +439,11 @@ end;
 procedure TMDCheckbox.StartRippleEffect;
 begin
   if FIsChecked then
-    RippleEffect(FMaterialColor, FSelectedPath.Position.X + FSelectedPath.Width / 2, FSelectedPath.Position.Y + FSelectedPath.Height / 2)
+    RippleEffect(FMaterialColor, FSelectedPath.Position.X + FSelectedPath.Width / 2,
+      FSelectedPath.Position.Y + FSelectedPath.Height / 2)
   else
-    RippleEffect(TMaterialColorRec.Black, FSelectedPath.Position.X + FSelectedPath.Width / 2, FSelectedPath.Position.Y + FSelectedPath.Height / 2)
+    RippleEffect(TMaterialColorRec.Black, FSelectedPath.Position.X + FSelectedPath.Width / 2,
+      FSelectedPath.Position.Y + FSelectedPath.Height / 2)
 end;
 
 procedure TMDCheckbox.UpdateCheckPath;
@@ -414,5 +455,13 @@ begin
   if (not FIsChecked) then
     FSelectedPath.Data.Data := UNSELECTED_ICON;
 end;
+
+initialization
+
+RegisterObservableMember(TArray<TClass>.Create(TMDCheckbox), 'IsChecked', 'FMX');
+
+finalization
+
+UnregisterObservableMember(TArray<TClass>.Create(TMDCheckbox));
 
 end.

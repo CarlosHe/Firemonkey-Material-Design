@@ -31,7 +31,9 @@ requires
   rtl,
   fmx,
   designide,
-  fmxdesigner;
+  fmxdesigner,
+  bindengine,
+  bindcomp;
 
 contains
   MD.Buttons in 'source\components\MD.Buttons.pas',
