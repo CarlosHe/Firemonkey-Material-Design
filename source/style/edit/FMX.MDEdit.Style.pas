@@ -580,6 +580,11 @@ end;
 
 destructor TStyledMDEdit.Destroy;
 begin
+  if Assigned(FPromptFloatAnimation) then
+  begin
+    FPromptFloatAnimation.Stop;
+  end;
+
   FOutlinedPathData.Free;
 
   FLoupeService := nil;
@@ -849,7 +854,10 @@ end;
 procedure TStyledMDEdit.DoExit;
 begin
   FFocused := False;
-  FPromptText.Repaint;
+  if Assigned(FPromptText) then
+  begin
+    FPromptText.Repaint;
+  end;
   if Model.Text.IsEmpty then
   begin
     if Assigned(FPromptFloatAnimation) then
@@ -1738,12 +1746,15 @@ begin
 end;
 
 procedure TStyledMDEdit.MMPromptTextChanged(var Message: TDispatchMessage);
-var
-  Caption: ICaption;
 begin
   if FPromptText <> nil then
-    if Supports(FPrompt, ICaption, Caption) then
-      Caption.Text := Model.TextPrompt;
+  begin
+    if Supports(FPromptText, ICaption) then
+    begin
+      FNeedBuildOutlinedPathData:=True;
+      FPromptText.Text := Model.TextPrompt;
+    end;
+  end;
 end;
 
 procedure TStyledMDEdit.MMCharCaseChanged(var Message: TDispatchMessage);
