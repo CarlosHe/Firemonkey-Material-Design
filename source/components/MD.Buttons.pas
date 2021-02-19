@@ -151,10 +151,6 @@ begin
   inherited;
 
   Self.ClipChildren := True;
-  // Height := 36;
-  // Width := 88;
-  // Margins.Left := 8;
-  // Margins.Right := 8;
   Self.CanFocus := True;
   Self.TabStop := True;
   Self.HitTest := True;
@@ -173,8 +169,7 @@ begin
     Width := Self.Width;
     Position.X := 0;
     Position.Y := 0;
-    Align := TAlignLayout.Client;
-    // Align := TAlignLayout.None;
+    Align := TAlignLayout.Contents;
     Anchors := [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight, TAnchorKind.akBottom];
     Fill.Color := TMaterialColors.Black;
     Opacity := 0.0;
@@ -195,7 +190,7 @@ begin
     Width := Self.Width;
     Position.X := 0;
     Position.Y := 0;
-    Align := TAlignLayout.Client;
+    Align := TAlignLayout.Contents;
     Align := TAlignLayout.None;
     Anchors := [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight, TAnchorKind.akBottom];
     Fill.Color := TMaterialColors.Black;
@@ -217,7 +212,7 @@ begin
     Width := Self.Width;
     Position.X := 0;
     Position.Y := 0;
-    Align := TAlignLayout.Client;
+    Align := TAlignLayout.Contents;
     Align := TAlignLayout.None;
     Anchors := [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight, TAnchorKind.akBottom];
     Fill.Color := TMaterialColors.White;
@@ -258,7 +253,6 @@ end;
 
 destructor TMDCustomButton.Destroy;
 begin
-
   Self.FreeNotification(Self);
   FreeAndNil(FText);
   FreeAndNil(FFill);
@@ -284,22 +278,19 @@ end;
 procedure TMDCustomButton.DoEnter;
 begin
   inherited;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
   if Self.IsFocused then
   begin
-     FBackgroundFocused.Opacity := 0.1;
+    FBackgroundFocused.Opacity := 0.1;
   end;
 end;
 
 procedure TMDCustomButton.DoExit;
 begin
   inherited;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
   if not Self.IsFocused then
   begin
-     FBackgroundFocused.Opacity := 0;
+    FBackgroundFocused.Opacity := 0;
   end;
-
 end;
 
 procedure TMDCustomButton.DoMaterialTextSettingsChanged(Sender: TObject);
@@ -312,25 +303,11 @@ end;
 procedure TMDCustomButton.DoMouseEnter;
 begin
   inherited;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
-  // FBackgroundFocused.AnimateFloat('Opacity', 0.1, 0.5, TAnimationType.In, TInterpolationType.Linear);
-
-  // FBackgroundFocus.StopPropertyAnimation('Opacity');
-  // FBackgroundFocus.AnimateFloat('Opacity', 0.2, 0.5, TAnimationType.In, TInterpolationType.Linear);
 end;
 
 procedure TMDCustomButton.DoMouseLeave;
 begin
   inherited;
-  // FBackgroundFocus.StopPropertyAnimation('Opacity');
-  // FBackgroundFocus.Opacity := 0;
-  // FBackgroundPressed.StopPropertyAnimation('Opacity');
-  // FBackgroundPressed.Opacity := 0;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
-  // if not Self.IsFocused then
-  // begin
-  // FBackgroundFocused.Opacity := 0;
-  // end;
 end;
 
 procedure TMDCustomButton.DoPaint;
@@ -381,36 +358,23 @@ end;
 procedure TMDCustomButton.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
   inherited;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
-  // FBackgroundFocused.Opacity := 0;
-  // FBackgroundFocus.StopPropertyAnimation('Opacity');
-  // FBackgroundFocus.Opacity := 0;
-  // FBackgroundPressed.StopPropertyAnimation('Opacity');
-  // FBackgroundPressed.AnimateFloat('Opacity', 0.12, 0.2, TAnimationType.InOut, TInterpolationType.Linear);
-
 end;
 
 procedure TMDCustomButton.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
   inherited;
-  // FBackgroundPressed.StopPropertyAnimation('Opacity');
-  // FBackgroundPressed.Opacity := 0;
-  // FBackgroundFocused.StopPropertyAnimation('Opacity');
-  // FBackgroundFocus.StopPropertyAnimation('Opacity');
-  // if IsMouseOver then
-  // begin
-  // FBackgroundFocused.AnimateFloat('Opacity', 0.1, 3, TAnimationType.InOut, TInterpolationType.Linear);
-  // FBackgroundFocus.AnimateFloat('Opacity', 0.2, 3, TAnimationType.InOut, TInterpolationType.Linear);
-  // end;
 end;
 
 procedure TMDCustomButton.Paint;
 begin
   inherited;
-  // Canvas.BeginScene;
-  Canvas.FillRect(TRectF.Create(0, 0, Self.Width, Self.Height), 5, 5, [TCorner.BottomLeft, TCorner.BottomRight, TCorner.TopLeft, TCorner.TopRight],
-    AbsoluteOpacity, FFill, TCornerType.Round);
-  // Canvas.EndScene;
+  Canvas.BeginScene;
+  try
+    Canvas.FillRect(TRectF.Create(0, 0, Self.Width, Self.Height), 5, 5, [TCorner.BottomLeft, TCorner.BottomRight, TCorner.TopLeft, TCorner.TopRight],
+      AbsoluteOpacity, FFill, TCornerType.Round);
+  finally
+    Canvas.EndScene;
+  end;
 end;
 
 procedure TMDCustomButton.PaintCircleButtonEffect(AMaterialColor: TMaterialColor; X, Y: Single);
@@ -436,7 +400,7 @@ begin
   Circle.Position.Y := Y - Circle.Height / 2;
   Circle.Opacity := 0;
 
-
+  {$WARN SYMBOL_DEPRECATED OFF}
   Circle.AnimateFloat('Opacity', 0.2, 0.2, TAnimationType.InOut, TInterpolationType.Linear);
   Circle.AnimateFloat('Height', Self.Width * 2, 0.7, TAnimationType.InOut, TInterpolationType.Linear);
   Circle.AnimateFloat('Width', Self.Width * 2, 0.7, TAnimationType.InOut, TInterpolationType.Linear);
@@ -445,6 +409,7 @@ begin
   Circle.AnimateFloat('Position.Y', Y - Self.Width, 0.7, TAnimationType.InOut, TInterpolationType.Linear);
 
   Circle.StopPropertyAnimation('Opacity');
+  {$WARN SYMBOL_DEPRECATED ON}
 
   Animation.AnimationType := TAnimationType.InOut;
   Animation.Interpolation := TInterpolationType.Linear;
@@ -558,6 +523,5 @@ begin
   PressedColor := FMaterialColor;
   FocusedColor := FMaterialColor;
 end;
-
 
 end.

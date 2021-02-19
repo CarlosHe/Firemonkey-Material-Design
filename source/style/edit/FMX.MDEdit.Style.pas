@@ -13,6 +13,7 @@ interface
 
 {$SCOPEDENUMS ON}
 
+
 uses
 {$IFDEF UseNativeDraw} FMX.Graphics.Native, {$ENDIF}
   System.Types, System.Classes, System.UITypes, System.Generics.Collections,
@@ -313,9 +314,9 @@ begin
       FPromptText.Position.X := 16;
       FPromptText.Font.Size := 20;
       FPromptText.Height := 25;
-      FPromptText.Width := Self.Width-32;
-      FPromptText.Anchors:= [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight];
-      FPromptText.TextSettings.WordWrap:=False;
+      FPromptText.Width := Self.Width - 32;
+      FPromptText.Anchors := [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight];
+      FPromptText.TextSettings.WordWrap := False;
       FPromptText.FontColor := $FF757575;
       FPromptText.Opacity := 1;
       FPromptText.HitTest := False;
@@ -409,7 +410,7 @@ end;
 procedure TStyledMDEdit.BuildOutlinedPathData;
 var
   LPromptTextWidth: Single;
-
+  LRectF : TRectF;
   LPromptTextSettings: ITextSettings;
 
 begin
@@ -422,6 +423,7 @@ begin
     if Supports(FPromptText, ITextSettings, LPromptTextSettings) then
     begin
       LPromptTextSettings.StyledSettings := [];
+      LPromptTextSettings.TextSettings.Trimming := TTextTrimming.Character;
     end;
 
   if Model.TextPrompt.IsEmpty then
@@ -430,7 +432,17 @@ begin
   begin
     if Assigned(LPromptTextSettings) then
       TCanvasManager.MeasureCanvas.Font.Assign(LPromptTextSettings.TextSettings.Font);
-    LPromptTextWidth := TCanvasManager.MeasureCanvas.TextWidth(Model.TextPrompt) + 4; // do not localize
+    LRectF := TRectF.Create(16,0, Self.Width-16, Self.Height);
+    TCanvasManager.MeasureCanvas.MeasureText(
+      LRectF,
+      Model.TextPrompt,
+      True,
+      [TFillTextFlag.RightToLeft],
+      TTextAlign.Leading,
+      TTextAlign.Leading
+
+    );
+    LPromptTextWidth := LRectF.Width+3;
   end;
 
   FOutlinedPathData.Clear;
@@ -441,17 +453,17 @@ begin
   else
     FOutlinedPathData.MoveTo(TPointF.Create(LPromptTextWidth + 16, 0));
 
-  FOutlinedPathData.LineTo(TPointF.Create(SElf.Width - 14, 0));
+  FOutlinedPathData.LineTo(TPointF.Create(Self.Width - 14, 0));
 
-  FOutlinedPathData.CurveTo(TPointF.Create(SElf.Width - 2, 0), TPointF.Create(SElf.Width - 2, 0), TPointF.Create(SElf.Width - 2, 12));
+  FOutlinedPathData.CurveTo(TPointF.Create(Self.Width - 2, 0), TPointF.Create(Self.Width - 2, 0), TPointF.Create(Self.Width - 2, 12));
 
-  FOutlinedPathData.LineTo(TPointF.Create(SElf.Width - 2, SElf.Height - 14));
+  FOutlinedPathData.LineTo(TPointF.Create(Self.Width - 2, Self.Height - 14));
 
-  FOutlinedPathData.CurveTo(TPointF.Create(SElf.Width - 2, SElf.Height - 2), TPointF.Create(SElf.Width - 2, SElf.Height - 2), TPointF.Create(SElf.Width - 14, SElf.Height - 2));
+  FOutlinedPathData.CurveTo(TPointF.Create(Self.Width - 2, Self.Height - 2), TPointF.Create(Self.Width - 2, Self.Height - 2), TPointF.Create(Self.Width - 14, Self.Height - 2));
 
-  FOutlinedPathData.LineTo(TPointF.Create(12, SElf.Height - 2));
+  FOutlinedPathData.LineTo(TPointF.Create(12, Self.Height - 2));
 
-  FOutlinedPathData.CurveTo(TPointF.Create(0, SElf.Height - 2), TPointF.Create(0, SElf.Height - 2), TPointF.Create(0, SElf.Height - 14));
+  FOutlinedPathData.CurveTo(TPointF.Create(0, Self.Height - 2), TPointF.Create(0, Self.Height - 2), TPointF.Create(0, Self.Height - 14));
 
   FOutlinedPathData.LineTo(TPointF.Create(0, 12));
 
@@ -508,7 +520,7 @@ begin
   if not TPlatformServices.Current.SupportsPlatformService(IFMXClipboardService, IInterface(FClipboardSvc)) then
     FClipboardSvc := nil;
   if TPlatformServices.Current.SupportsPlatformService(IFMXTextService, IInterface(PlatformTextService)) then
-    FTextService := PlatformTextService.GetTextServiceClass.Create(SElf, False);
+    FTextService := PlatformTextService.GetTextServiceClass.Create(Self, False);
   TPlatformServices.Current.SupportsPlatformService(ILoupeService, IInterface(FLoupeService));
 
   FCursorFill := TBrush.Create(TBrushKind.Solid, TAlphaColorRec.Black);
@@ -530,7 +542,7 @@ function TStyledMDEdit.CreatePopupMenu: TPopupMenu;
 var
   TmpItem: TMenuItem;
 begin
-  Result := TPopupMenu.Create(SElf);
+  Result := TPopupMenu.Create(Self);
   Result.Stored := False;
 
   TmpItem := TMenuItem.Create(Result);
@@ -663,6 +675,7 @@ var
   VisibleCharPos: Single;
   FEdit: TMDEdit;
 begin
+
   BuildOutlinedPathData;
   FEdit := GetEdit as TMDEdit;
   Canvas.Stroke.Kind := TBrushKind.Solid;
@@ -679,10 +692,10 @@ begin
     Canvas.Stroke.Thickness := IfThen(GlobalUseGPUCanvas, 2, 1);
   end;
 
-{$IFDEF UseNativeDraw}Canvas.NativeDraw(TRectF.Create(0, 0, SElf.Width, SElf.Height),
+{$IFDEF UseNativeDraw}Canvas.NativeDraw(TRectF.Create(0, 0, Self.Width, Self.Height),
     procedure
     begin {$ENDIF}
-      Canvas.DrawPath(FOutlinedPathData, SElf.Opacity);
+      Canvas.DrawPath(FOutlinedPathData, Self.Opacity);
 {$IFDEF UseNativeDraw} end); {$ENDIF}
   if ((FTextService = nil)) or (FTextService.Text.IsEmpty and (not FTextService.HasMarkedText)) then
     exit;
@@ -807,7 +820,8 @@ var
 begin
   inherited;
   FFocused := True;
-  FPromptText.Repaint;
+  if FPromptText <> nil then
+    FPromptText.Repaint;
   if Model.Text.IsEmpty then
   begin
     if Assigned(FPromptFloatAnimation) then
@@ -1751,7 +1765,7 @@ begin
   begin
     if Supports(FPromptText, ICaption) then
     begin
-      FNeedBuildOutlinedPathData:=True;
+      FNeedBuildOutlinedPathData := True;
       FPromptText.Text := Model.TextPrompt;
     end;
   end;
@@ -2218,7 +2232,7 @@ function TStyledMDEdit.ShowContextMenu(const ScreenPosition: TPointF): Boolean;
         UpdatePopupMenuItems;
         if Model.CheckSpelling and (FSpellService <> nil) and (Length(FSpellingRegions) > 0) then
           UpdateSpellPopupMenu(ScreenToLocal(ScreenPosition));
-        EditPopupMenu.PopupComponent := SElf;
+        EditPopupMenu.PopupComponent := Self;
         EditPopupMenu.Popup(Round(ScreenPosition.X), Round(ScreenPosition.Y));
       finally
         EditPopupMenu.Parent := nil;
@@ -2341,7 +2355,7 @@ begin
     end;
     UpdateSelectionPointPositions;
   end;
-  LinkObserversValueModified(SElf.Observers);
+  LinkObserversValueModified(Self.Observers);
   DoChangeTracking;
   DoTyping;
 end;
